@@ -1,6 +1,8 @@
 %% Example of sequence diagram
 sequenceDiagram
   Main->>MultiLayerNetExtend: MultiLayerNetExtend()
+  MultiLayerNetExtend->>MultiLayerNetExtend: __init_weight(weight_init_std)
+  MultiLayerNetExtend->>Affine: Affine()
   MultiLayerNetExtend-->>Main: network
   Main->>Trainer: Trainer(network)
   Trainer->>SGD: SGD()
@@ -9,8 +11,14 @@ sequenceDiagram
   Main->>+Main: train()
   loop max_iter
     Main->>Trainer: train_step()
-    Trainer->>MultiLayerNetExtend: gradient()
-    MultiLayerNetExtend-->>Trainer: grads
+    Trainer->>+MultiLayerNetExtend: gradient()
+    MultiLayerNetExtend->>+MultiLayerNetExtend: loss(x, t, train_flg=True)
+    MultiLayerNetExtend->>+MultiLayerNetExtend: predict()
+    MultiLayerNetExtend->>Affine: forward(x)
+    MultiLayerNetExtend->>-MultiLayerNetExtend: predict()
+    MultiLayerNetExtend->>-MultiLayerNetExtend: loss(x, t, train_flg=True)
+    MultiLayerNetExtend->>Affine: backward(dout)
+    MultiLayerNetExtend-->>-Trainer: grads
     Trainer->>SGD: update()
     Trainer->>MultiLayerNetExtend: loss()
     MultiLayerNetExtend-->>Trainer: loss
